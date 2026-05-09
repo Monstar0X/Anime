@@ -11,31 +11,14 @@ from .ffencoder import ffargs
 from .func_utils import handle_logs
 from .reporter import rep
 
-CAPTION_FORMAT = """
-<b>◆ <i>{title}</i> ◆</b>
-<b>Season {anime_season} • Episode {ep_no}</b>
-<b>━━━━━━━━━━━━━━━━━━━━━━━━</b>
-<b>⌬ Audio:</b> <i>{audio_lang} [ESub]</i>  
-<b>⌬ Status:</b> <i>{status}</i>  
-<b>⌬ Total Episodes:</b> <i>{t_eps}</i>
+CAPTION_FORMAT = """<blockquote><b>{title}</blockquote></b>
+──────────────────────
+➥ <b>Season: {season_number}</b>
+➤ <b>Episode: {ep_no}</b>
+➥ <b>Quality: Multi Quality [{lang_info}]</b>
+──────────────────────
+<blockquote>● ᴜsᴇ <b><a href="https://play.google.com/store/apps/details?id=org.videolan.vlc">ᴠʟᴄ</a> ᴏʀ ᴀɴʏ ᴏᴛʜᴇʀ <a href="https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad">ɢᴏᴏᴅ ᴠɪᴅᴇᴏ</a> ᴘʟᴀʏᴇʀ ᴀᴘᴘ ᴛᴏ ᴡᴀᴛᴄʜ ᴛʜᴇ ᴇᴘɪsᴏᴅᴇs ᴡɪᴛʜ ɢᴏᴏᴅ ᴇxᴘᴇʀɪᴇɴᴄᴇ! </blockquote>"""
 
-<b>✦ Genres:</b> <i>{genres}</i>
-<b>━━━━━━━━━━━━━━━━━━━━━━━━</b>
-<b>✧ Powered By:</b> <i>{cred}</i>
-"""
-
-GENRES_EMOJI = {
-    "Action": "👊", "Adventure": choice(['🪂', '🧗‍♀️', '🗺️']), "Comedy": "🤣",
-    "Drama": "🎭", "Ecchi": choice(['💋', '🥵']), "Fantasy": choice(['🧞', '🧙‍♂️', '🐉', '🌗']),
-    "Hentai": "🔞", "Horror": "☠️", "Mahou Shoujo": "☯️", "Mecha": "🤖", "Mystery": "🔮",
-    "Psychological": "♟️", "Romance": "💞", "Sci-Fi": "🛸", "Slice of Life": choice(['☘️', '🍁']),
-    "Sports": "⚽️", "Supernatural": "🫧", "Thriller": choice(['🥶', '🔪', '🤯']),
-    "Isekai": choice(['🌌', '🌀', '🧙']), "Historical": "🏯", "Music": "🎶", "Martial Arts": "🥋",
-    "School": "🏫", "Military": "🎖️", "Demons": "😈", "Vampire": "🧛‍♂️", "Space": "🚀",
-    "Game": "🎮", "Crime": "🚓", "Parody": "😂", "Detective": "🕵️‍♂️", "Tragedy": "💔",
-    "Yaoi": "👨‍❤️‍👨", "Yuri": "👩‍❤️‍👩", "Kids": "🧒", "Harem": "👸", "Music & Idol": "🎤",
-    "Post-Apocalyptic": "☢️", "Cyberpunk": "💽", "Samurai": "🗡️", "Time Travel": "⏳"
-}
 
 GENRE_NORMALIZATION = {
     "Action & Adventure": "Action",
