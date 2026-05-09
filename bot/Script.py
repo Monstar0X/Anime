@@ -5,7 +5,7 @@ class botmaker(object):
 
     FORCE_MSG = """ʜᴇʟʟᴏ {first}\n\n<b>ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ button ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛᴇᴅ ꜰɪʟᴇ.</b>"""
 
-    HELP_TXT = """<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋɪɴɢ ғᴏʀ @Cantarellabots
+    HELP_TXT = """<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋɪɴɢ ғᴏʀ @Jas_Mehra
 
 ❏ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅs
 ├ /start : sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ
@@ -15,9 +15,9 @@ class botmaker(object):
 sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ, ᴊᴏɪɴ ʙᴏᴛʜ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ — ᴛʜᴀᴛ'ꜱ ɪᴛ.....!</blockquote></b>"""
 
     ABOUT_TXT = """<b><blockquote>
-◈ ᴄʀᴇᴀᴛᴏʀ: <a href="https://t.me/akaza7902">ABHI</a>
-◈ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ: <a href="https://t.me/cantarellabots">ANIME IN TELUGU </a>
-◈ Oɴɢᴏɪɴɢ Eɴɢ sᴜʙ/ᴅᴜʙ: <a href="https://t.me/cantarellabots">Cantarellabots</a>
+◈ ᴄʀᴇᴀᴛᴏʀ: <a href="https://t.me/Jas_Mehra">𝖩𝖺𝗌 𝖬𝖾𝗁𝗋𝖺</a>
+◈ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ: <a href="https://t.me/Anime_x_Nova">𝖠𝗇𝗂𝗆𝖾 𝖭𝗈𝗏𝖺</a>
+◈ Oɴɢᴏɪɴɢ Eɴɢ sᴜʙ/ᴅᴜʙ: <a href="https://t.me/Ongoing_Nova">Ongoing Nova</a>
 </blockquote></b>"""
 
     CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockquote>
