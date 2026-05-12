@@ -12,7 +12,7 @@ class Var:
     API_HASH = getenv("API_HASH", "4c5c28abd62233ef4b993fb972f83262")
     BOT_TOKEN = getenv("BOT_TOKEN", "8167289688:AAE-eeWDiRD1EcX9IWF_cN72aPefZwtKYZI")
     DB_URI = getenv("DB_URI", "mongodb+srv://Jas:jasmehra13221422@cluster0.xbyevs3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-    DB_NAME = getenv("DB_NAME", "Auto Anime")
+    DB_NAME = getenv("DB_NAME", "Cluster0")
     BAN_SUPPORT = getenv("BAN_SUPPORT", "https://t.me/AnimeNovaChat")
     FSUB_LINK_EXPIRY = int(getenv("FSUB_LINK_EXPIRY", "120"))
     CHANNEL_ID = int(getenv("CHANNEL_ID", "0"))
@@ -25,7 +25,7 @@ class Var:
     LOG_CHANNEL = int(getenv("LOG_CHANNEL", "-1002195760778"))
     MAIN_CHANNEL = int(getenv("MAIN_CHANNEL", "-1002486563630"))
     FILE_STORE = int(getenv("FILE_STORE", "-1002310535906"))
-    ADMINS = list(map(int, getenv("ADMINS", "6039119180").split()))
+    ADMINS = list(map(int, getenv("ADMINS", "6039119180 7955996369").split()))
 
     RSS_ITEMS = getenv("RSS_ITEMS", "").split()
     SEND_SCHEDULE = getenv("SEND_SCHEDULE", "True").lower() == "true"
