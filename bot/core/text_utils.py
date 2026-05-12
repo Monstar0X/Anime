@@ -13,27 +13,13 @@ from .func_utils import handle_logs
 from .reporter import rep
 
 
-CAPTION_FORMAT = """<blockquote><b>{title}</b></blockquote>
-
+CAPTION_FORMAT = """<blockquote><b>{title}</blockquote></b>
 ──────────────────────
-➥ <b>Season:</b> {season_number}
-➤ <b>Episode:</b> {ep_no}
-➥ <b>Audio:</b> {lang_info}
-➥ <b>Status:</b> {status}
-➥ <b>Score:</b> {avg_score}
-➥ <b>Genres:</b> {genres}
+➥ <b>Season: {season_number}</b>
+➤ <b>Episode: {ep_no}</b>
+➥ <b>Quality: Multi Quality [{lang_info}]</b>
 ──────────────────────
-
-<blockquote>{plot}</blockquote>
-
-<blockquote>
-● ᴜsᴇ <b><a href="https://play.google.com/store/apps/details?id=org.videolan.vlc">ᴠʟᴄ</a></b>
-ᴏʀ ᴀɴʏ ᴏᴛʜᴇʀ
-<b><a href="https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad">ɢᴏᴏᴅ ᴠɪᴅᴇᴏ</a></b>
-ᴘʟᴀʏᴇʀ ᴀᴘᴘ ᴛᴏ ᴡᴀᴛᴄʜ ᴛʜᴇ ᴇᴘɪsᴏᴅᴇs ᴡɪᴛʜ
-ɢᴏᴏᴅ ᴇxᴘᴇʀɪᴇɴᴄᴇ!
-</blockquote>
-"""
+<blockquote>● ᴜsᴇ <b><a href="https://play.google.com/store/apps/details?id=org.videolan.vlc">ᴠʟᴄ</a> ᴏʀ ᴀɴʏ ᴏᴛʜᴇʀ <a href="https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad">ɢᴏᴏᴅ ᴠɪᴅᴇᴏ</a> ᴘʟᴀʏᴇʀ ᴀᴘᴘ ᴛᴏ ᴡᴀᴛᴄʜ ᴛʜᴇ ᴇᴘɪsᴏᴅᴇs ᴡɪᴛʜ ɢᴏᴏᴅ ᴇxᴘᴇʀɪᴇɴᴄᴇ! </blockquote>"""
 
 
 GENRES_EMOJI = {
@@ -306,6 +292,8 @@ class TextEditor:
             or self.pdata.get("anime_title")
             or self.__name
         )
+
+        anime_title = anime_title[:15].strip()
 
         ep_no = self.pdata.get("episode_number") or "01"
 
