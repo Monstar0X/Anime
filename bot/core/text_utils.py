@@ -297,34 +297,41 @@ class TextEditor:
 
     @handle_logs
     async def get_upname(self, qual=""):
-        anime_name = self.pdata.get("anime_title")
-
-        codec = (
-            'HEVC'
-            if 'libx265' in ffargs[qual]
-            else 'AV1'
-            if 'libaom-av1' in ffargs[qual]
-            else ''
-        )
-
-        lang = 'SUB' if 'sub' in self.__name.lower() else 'Sub'
-
-        anime_season = (
-            str(ani_s[-1])
-            if (ani_s := self.pdata.get('anime_season', '01'))
-            and isinstance(ani_s, list)
-            else str(ani_s)
-        )
-
         titles = self.adata.get('title', {})
 
-        return (
-            f"[S{anime_season}-E{self.pdata.get('episode_number')}] "
-            f"{titles.get('english') or titles.get('romaji') or titles.get('native')} "
-            f"{'['+qual+'p]' if qual else ''} "
-            f"{'['+codec.upper()+'] ' if codec else ''}"
-            f"[{lang}] {Var.BRAND_UNAME}.mkv"
+        anime_title = (
+            titles.get('english')
+            or titles.get('romaji')
+            or titles.get('native')
+            or self.pdata.get("anime_title")
+            or self.__name
         )
+
+        ep_no = self.pdata.get("episode_number") or "01"
+
+        anime_season = (
+            str(ani_s[-1]).zfill(2)
+            if (ani_s := self.pdata.get('anime_season', '01'))
+            and isinstance(ani_s, list)
+            else str(ani_s).zfill(2)
+        )
+
+        ep_no = str(ep_no).zfill(2)
+
+        lower_name = self.__name.lower()
+
+        if "dual" in lower_name or "multi" in lower_name:
+            lang = "Multi"
+
+        elif "dub" in lower_name:
+            lang = "Dub"
+
+        else:
+            lang = "Sub"
+
+        quality = f"{qual}p" if qual and str(qual).isdigit() else qual
+
+        return f"[S{anime_season}-E{ep_no}] {anime_title} [{quality} ⌯ {lang}].mkv"
 
     @handle_logs
     async def get_caption(self):
