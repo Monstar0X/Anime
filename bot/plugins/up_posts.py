@@ -23,6 +23,7 @@ from telegram.ext import CallbackContext, CommandHandler
 # Bot internal imports
 from config import Var
 from bot.core.bot_instance import bot, bot_loop, ani_cache, ffQueue
+from bot.core.database import *
 from bot.core.text_utils import TextEditor
 from bot.core.reporter import rep
 from bot.core.func_utils import (
@@ -33,9 +34,6 @@ from bot.core.func_utils import (
 # Setup logging
 LOGGER = logging.getLogger(__name__)
 
-# MongoDB setup
-mongo_client = AsyncIOMotorClient(DB_URI)
-db = mongo_client['AutoAniOngoing']
 
 
 def get_readable_time(seconds: int) -> str:
