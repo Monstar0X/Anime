@@ -6,9 +6,10 @@ from aiofiles.os import remove as aioremove
 from traceback import format_exc
 from base64 import urlsafe_b64encode
 from time import time
+import hashlib
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-from config import Var
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, CallbackQuery
+from config import Var, LOGS
 from bot.core.bot_instance import bot, bot_loop, ani_cache, ffQueue, ffLock, ff_queued
 from .tordownload import TorDownloader
 from .database import db
@@ -25,6 +26,9 @@ btn_formatter = {
     '480': '𝟰𝟴𝟬𝗣',
     '360': '𝟯𝟲𝟬𝗣'
 }
+
+# Temporary memory to store error data for the inline buttons
+pending_errors = {}
 
 @bot.on_message(filters.command("add_rss") & filters.user(Var.ADMINS))
 async def add_custom_rss(client, message: Message):
@@ -149,6 +153,43 @@ async def list_channels(client, message: Message):
         await message.reply_text("⚠️ Eʀʀᴏʀ ғᴇᴛᴄʜɪɴɢ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ ᴍᴀᴘᴘɪɴɢs.")
         await rep.report(f"Error in list_channels: {str(e)}", "error", log=True)
 
+
+# --- BUTTON CALLBACK HANDLER ---
+@bot.on_callback_query(filters.regex(r"^err_(skip|prev)_(.*)"))
+async def handle_error_buttons(client, query: CallbackQuery):
+    action = query.matches[0].group(1)
+    error_hash = query.matches[0].group(2)
+    
+    if error_hash not in pending_errors:
+        await query.answer("This task has expired or was already handled.", show_alert=True)
+        await query.message.delete()
+        return
+        
+    data = pending_errors.pop(error_hash)
+    
+    if action == "skip":
+        await query.answer("File skipped permanently.")
+        await query.message.edit_text(f"⏭️ **Skipped File:**\n`{data['name']}`")
+    elif action == "prev":
+        await query.answer("Triggering previous file fetch...")
+        await query.message.edit_text(f"🔄 **Falling back to previous release for:**\n`{data['name']}`")
+        bot_loop.create_task(trigger_idle_leeching())
+
+
+# --- IDLE LEECHING LOGIC ---
+async def trigger_idle_leeching():
+    """Fetches the previous episode from the RSS feed when the queue is empty."""
+    try:
+        if Var.RSS_ITEMS:
+            # Index 1 fetches the entry right behind the latest release
+            info = await getfeed(Var.RSS_ITEMS[0], 1)
+            if info:
+                await rep.report(f"💤 Bot is idle. Fetching older release: {info.title}", "info", log=True)
+                bot_loop.create_task(get_animes(info.title, info.link))
+    except Exception as e:
+        await rep.report(f"Error during idle leeching: {e}", "warning", log=True)
+
+
 async def fetch_animes():
     await rep.report("Fetching Anime Started !!!", "info", log=True)
     processed_links = set()
@@ -158,6 +199,8 @@ async def fetch_animes():
         await asleep(30)
         if ani_cache['fetch_animes']:
             all_rss = Var.RSS_ITEMS + list(ani_cache.get("custom_rss", []))
+            found_new = False
+            
             for link in all_rss:
                 if len(active_tasks) >= max_tasks:
                     await gather(*active_tasks)
@@ -166,18 +209,45 @@ async def fetch_animes():
                     if info.link in processed_links:
                         continue
                     processed_links.add(info.link)
+                    found_new = True
                     task = bot_loop.create_task(get_animes(info.title, info.link))
                     active_tasks.append(task)
+            
             active_tasks = [task for task in active_tasks if not task.done()]
+            
+            # TRIGGER IDLE LEECHING IF NOTHING WAS FOUND
+            if not found_new and not active_tasks:
+                await trigger_idle_leeching()
 
 async def get_animes(name, torrent, force=False):
     try:
         ani_info = TextEditor(name)
         await ani_info.load_anilist()
         ani_id, ep_no = ani_info.adata.get('id'), ani_info.pdata.get("episode_number")
-        if not ani_id or not ep_no:
-            await rep.report(f"Invalid anime data for {name}: ID or episode number missing", "error", log=True)
+        
+        # FEATURE 1: AUTO-SKIP BATCHES
+        if isinstance(ep_no, list) or (isinstance(ep_no, str) and "-" in ep_no) or "[Batch]" in name:
+            await rep.report(f"Batch file detected and skipped: {name}", "warning", log=True)
             return
+
+        # FEATURE 2: MANUAL SKIP AND PREV BUTTONS
+        if not ani_id or not ep_no:
+            error_hash = hashlib.md5(name.encode()).hexdigest()[:10]
+            pending_errors[error_hash] = {"name": name, "torrent": torrent}
+            
+            keyboard = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("⏭️ Skip File", callback_data=f"err_skip_{error_hash}"),
+                    InlineKeyboardButton("🔄 Try Previous", callback_data=f"err_prev_{error_hash}")
+                ]
+            ])
+            await bot.send_message(
+                chat_id=LOGS, 
+                text=f"⚠️ **Metadata Parse Failed!**\n\n**File:** `{name}`\n\nMissing ID or Episode Number. What should I do?",
+                reply_markup=keyboard
+            )
+            return
+            
         if ani_id not in ani_cache['ongoing']:
             ani_cache['ongoing'].add(ani_id)
         elif not force:
@@ -185,9 +255,6 @@ async def get_animes(name, torrent, force=False):
         ani_data = await db.get_anime(ani_id)
         qual_data = ani_data.get(ep_no) if ani_data else None
         if force or not ani_data or not qual_data or not all(qual_data.get(qual) for qual in Var.QUALS):
-            if "[Batch]" in name:
-                await rep.report(f"Torrent Skipped!\n\n{name}", "warning", log=True)
-                return
             await rep.report(f"New Anime Torrent Found!\n\n{name}", "info", log=True)
             anime_name = name
             photo_url = None
@@ -348,3 +415,4 @@ async def extra_utils(msg_id, out_path):
     if Var.BACKUP_CHANNEL != 0:
         for chat_id in str(Var.BACKUP_CHANNEL).split():
             await msg.copy(int(chat_id))
+            
