@@ -151,7 +151,17 @@ class AniLister:
             self.__vars = {'search': self.__ani_name}
 
     async def post_data(self):
-        async with ClientSession() as sess:
+        # 1. Define browser-like headers to bypass Cloudflare
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Origin': 'https://anilist.co',
+            'Referer': 'https://anilist.co/'
+        }
+        
+        # 2. Pass the headers into the ClientSession
+        async with ClientSession(headers=headers) as sess:
             async with sess.post(
                 self.__api,
                 json={
@@ -159,9 +169,15 @@ class AniLister:
                     'variables': self.__vars
                 }
             ) as resp:
+                # Fallback check in case the response isn't JSON
+                try:
+                    resp_json = await resp.json()
+                except Exception:
+                    resp_json = {}
+                    
                 return (
                     resp.status,
-                    await resp.json(),
+                    resp_json,
                     resp.headers
                 )
 
