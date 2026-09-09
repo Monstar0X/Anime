@@ -235,7 +235,7 @@ async def get_animes(name, torrent, force=False):
             error_hash = hashlib.md5(name.encode()).hexdigest()[:10]
             pending_errors[error_hash] = {"name": name, "torrent": torrent}
             
-                        keyboard = InlineKeyboardMarkup([
+            keyboard = InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("⏭️ Skip File", callback_data=f"err_skip_{error_hash}"),
                     InlineKeyboardButton("🔄 Try Previous", callback_data=f"err_prev_{error_hash}")
