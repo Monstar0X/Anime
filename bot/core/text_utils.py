@@ -228,7 +228,6 @@ class AniLister:
 
         return {}
 
-
 class TextEditor:
     def __init__(self, name):
         self.__name = name
@@ -236,7 +235,7 @@ class TextEditor:
         self.pdata = parse(name)
         self.anilister = AniLister(self.__name, datetime.now().year)
 
-        async def load_anilist(self):
+    async def load_anilist(self):
         cache_names = set()
 
         variations = [
