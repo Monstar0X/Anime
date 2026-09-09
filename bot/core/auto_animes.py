@@ -235,14 +235,18 @@ async def get_animes(name, torrent, force=False):
             error_hash = hashlib.md5(name.encode()).hexdigest()[:10]
             pending_errors[error_hash] = {"name": name, "torrent": torrent}
             
-            keyboard = InlineKeyboardMarkup([
+                        keyboard = InlineKeyboardMarkup([
                 [
                     InlineKeyboardButton("⏭️ Skip File", callback_data=f"err_skip_{error_hash}"),
                     InlineKeyboardButton("🔄 Try Previous", callback_data=f"err_prev_{error_hash}")
                 ]
             ])
+            
+            # Safely extract the chat ID if LOGS is a list, tuple, or set
+            log_chat_id = list(LOGS)[0] if isinstance(LOGS, (list, tuple, set)) else LOGS
+            
             await bot.send_message(
-                chat_id=LOGS, 
+                chat_id=int(log_chat_id), 
                 text=f"⚠️ **Metadata Parse Failed!**\n\n**File:** `{name}`\n\nMissing ID or Episode Number. What should I do?",
                 reply_markup=keyboard
             )
