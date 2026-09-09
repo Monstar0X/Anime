@@ -236,7 +236,7 @@ class TextEditor:
         self.pdata = parse(name)
         self.anilister = AniLister(self.__name, datetime.now().year)
 
-    async def load_anilist(self):
+        async def load_anilist(self):
         cache_names = set()
 
         variations = [
@@ -247,11 +247,10 @@ class TextEditor:
             "clean"
         ]
 
+        # 1. Try standard AniList search first
         for var in variations:
-
             if var == "clean":
                 ani_name = self.pdata.get("anime_title")
-
             else:
                 no_s, no_y = var
                 ani_name = await self.parse_name(no_s, no_y)
@@ -267,7 +266,31 @@ class TextEditor:
             self.adata = await self.anilister.get_anidata()
 
             if self.adata:
-                break
+                return
+
+        # 2. THE ULTIMATE FALLBACK: MyAnimeList (Jikan) Translator
+        # If SubsPlease used a weird abbreviation, use MAL to translate it to the official title
+        base_title = self.pdata.get("anime_title")
+        if not self.adata and base_title:
+            try:
+                async with ClientSession() as sess:
+                    # Ask Jikan what this abbreviation means
+                    async with sess.get(f"https://api.jikan.moe/v4/anime?q={base_title}&limit=1") as resp:
+                        if resp.status == 200:
+                            mal_data = await resp.json()
+                            if mal_data.get('data'):
+                                # Extract the full, official title
+                                official_title = mal_data['data'][0]['title']
+                                
+                                # Search AniList again using the official title!
+                                self.anilister._AniLister__ani_name = official_title
+                                self.anilister._AniLister__vars = {'search': official_title}
+                                
+                                self.adata = await self.anilister.get_anidata()
+                                if self.adata:
+                                    return
+            except Exception:
+                pass
 
     @handle_logs
     async def parse_name(self, no_s=False, no_y=False):
