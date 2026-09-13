@@ -18,7 +18,7 @@ from .text_utils import TextEditor
 from .ffencoder import FFEncoder
 from .tguploader import TgUploader
 from .reporter import rep
-
+import hashlib
 btn_formatter = {
     'HDRip': '𝗛𝗗𝗥𝗶𝗽',
     '1080': '𝟭𝟬𝟴𝟬𝗣',
@@ -100,7 +100,30 @@ async def set_channel(client, message: Message):
     await db.set_anime_channel(ani_id, channel_id)
     await message.reply_text(f"<b><blockquote>✅ <u>Aɴɪᴍᴇ</u> : {anime_name} \n<u>Iᴅ</u> : {ani_id} Sᴜᴄᴄᴇssғᴜʟʟʏ sᴇᴛ ᴛᴏ ᴄʜᴀɴɴᴇʟ {channel_id}</blockquote></b>")
     await rep.report(f"Anime {anime_name} (ID: {ani_id}) set to channel {channel_id}", "info", log=True)
-
+    
+@bot.on_message(filters.command("test_error") & filters.user(Var.ADMINS))
+async def test_error_buttons(client, message: Message):
+    # Create a fake broken torrent name
+    fake_name = "[SubsPlease] Testing Broken Anime - 99 (1080p).mkv"
+    error_hash = hashlib.md5(fake_name.encode()).hexdigest()[:10]
+    
+    # Store it in memory just like the real queue does
+    pending_errors[error_hash] = {"name": fake_name, "torrent": "http://fake-torrent.com"}
+    
+    # Generate the buttons
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("⏭️ Skip File", callback_data=f"err_skip_{error_hash}"),
+            InlineKeyboardButton("🔄 Try Previous", callback_data=f"err_prev_{error_hash}")
+        ]
+    ])
+    
+    # Send it directly to you
+    await message.reply_text(
+        text=f"⚠️ **Metadata Parse Failed!**\n\n**File:** `{fake_name}`\n\nMissing ID or Episode Number. What should I do?",
+        reply_markup=keyboard
+    )
+    
 @bot.on_message(filters.command("setsticker") & filters.user(Var.ADMINS))
 async def set_sticker(client, message: Message):
     sticker_id = None
