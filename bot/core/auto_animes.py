@@ -265,11 +265,9 @@ async def get_animes(name, torrent, force=False):
                 ]
             ])
             
-            # Safely extract the chat ID if LOGS is a list, tuple, or set
-            log_chat_id = list(LOGS)[0] if isinstance(LOGS, (list, tuple, set)) else LOGS
-            
+            # Send the alert to your dedicated Log Channel
             await bot.send_message(
-                chat_id=int(log_chat_id), 
+                chat_id=int(Var.LOG_CHANNEL), 
                 text=f"⚠️ **Metadata Parse Failed!**\n\n**File:** `{name}`\n\nMissing ID or Episode Number. What should I do?",
                 reply_markup=keyboard
             )
