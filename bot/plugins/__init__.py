@@ -1,9 +1,2 @@
-
-from aiohttp import web
-from .route import routes
-
-
-async def web_server():
-    web_app = web.Application(client_max_size=30000000)
-    web_app.add_routes(routes)
-    return web_app
+# Plugin package. Pyrogram auto-loads every module under bot/plugins
+# (see plugins=dict(root="bot/plugins") in bot/core/bot_instance.py).
