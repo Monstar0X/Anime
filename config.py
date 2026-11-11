@@ -27,7 +27,7 @@ class Var:
     API_ID = getenv("API_ID", "22225430")
     API_HASH = getenv("API_HASH", "4c5c28abd62233ef4b993fb972f83262")
     BOT_TOKEN = getenv("BOT_TOKEN", "8167289688:AAE-eeWDiRD1EcX9IWF_cN72aPefZwtKYZI")
-    DB_URI = getenv("DB_URI", "mongodb+srv://Jas:jasmehra13221422@cluster0.xbyevs3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    DB_URI = getenv("DB_URI", "")
     DB_NAME = getenv("DB_NAME", "Cluster0")
     BAN_SUPPORT = getenv("BAN_SUPPORT", "https://t.me/AnimeNovaChat")
     FSUB_LINK_EXPIRY = int(getenv("FSUB_LINK_EXPIRY", "120"))
@@ -47,10 +47,10 @@ class Var:
     SEND_SCHEDULE = getenv("SEND_SCHEDULE", "True").lower() == "true"
     BRAND_UNAME = getenv("BRAND_UNAME", "@Nova_Networks")
 
-    FFCODE_1080 = _normalize_ffcode(getenv("FFCODE_1080"))
-    FFCODE_720 = _normalize_ffcode(getenv("FFCODE_720"))
-    FFCODE_480 = _normalize_ffcode(getenv("FFCODE_480"))
-    FFCODE_360 = _normalize_ffcode(getenv("FFCODE_360"))
+    FFCODE_1080p = _normalize_ffcode(getenv("FFCODE_1080"))
+    FFCODE_720p = _normalize_ffcode(getenv("FFCODE_720"))
+    FFCODE_480p = _normalize_ffcode(getenv("FFCODE_480"))
+    FFCODE_360p = _normalize_ffcode(getenv("FFCODE_360"))
     FFCODE_HDRip = getenv("FFCODE_HDRip")
     QUALS = getenv("QUALS", "480 720 1080 HDRip").split()
 
