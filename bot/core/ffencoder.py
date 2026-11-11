@@ -22,10 +22,11 @@ ffargs = {
 }
 
 class FFEncoder:
-    def __init__(self, message, path, name, qual):
+    def __init__(self, message, path, name, qual, keyboard=None):
         self.__proc = None
         self.is_cancelled = False
         self.message = message
+        self.keyboard = keyboard
         self.__name = name
         self.__qual = qual
         self.dl_path = path
@@ -44,7 +45,7 @@ class FFEncoder:
             async with aiopen(self.__prog_file, 'r+') as p:
                 text = await p.read()
             if text:
-                time_done = floor(int(t[-1]) / 1000000) if (t := findall("out_time_ms=(\d+)", text)) else 1
+                time_done = floor(int(t[-1]) / 1000000) if (t := findall(r"out_time_ms=(\d+)", text)) else 1
                 ensize = int(s[-1]) if (s := findall(r"total_size=(\d+)", text)) else 0
                 
                 diff = time() - self.__start_time
@@ -64,7 +65,7 @@ class FFEncoder:
     ‣ <b>Tɪᴍᴇ Lᴇғᴛ :</b> {convertTime(eta)}</blockquote>
 <blockquote>‣ <b>Fɪʟᴇ(s) Eɴᴄᴏᴅᴇᴅ:</b> <code>{Var.QUALS.index(self.__qual)} / {len(Var.QUALS)}</code></blockquote>"""
             
-                await editMessage(self.message, progress_str)
+                await editMessage(self.message, progress_str, buttons=self.keyboard)
                 if (prog := findall(r"progress=(\w+)", text)) and prog[-1] == 'end':
                     break
             await asleep(8)

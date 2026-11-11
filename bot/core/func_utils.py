@@ -189,11 +189,24 @@ async def mediainfo(file, get_json=False, get_duration=False):
             try:
                 return float(jloads(stdout.decode())['media']['track'][0]['Duration'])
             except Exception:
-                return 1440
+                return await _ffprobe_duration(file)
         return await get_telegraph(stdout.decode())
     except Exception as err:
         await rep.report(format_exc(), "error")
         return ""
+
+
+async def _ffprobe_duration(file) -> float:
+    """Duration fallback for hosts without the mediainfo binary."""
+    try:
+        process = await create_subprocess_shell(
+            f"ffprobe -v error -show_entries format=duration -of "
+            f"default=nw=1:nk=1 '''{file}'''", stdout=PIPE, stderr=PIPE)
+        stdout, _ = await process.communicate()
+        value = float(stdout.decode().strip())
+        return value if value > 0 else 1440.0
+    except Exception:
+        return 1440.0
 
 async def clean_up():
     try:

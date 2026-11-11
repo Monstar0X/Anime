@@ -25,22 +25,24 @@ getLogger("pyrogram").setLevel(ERROR)
 LOGS = getLogger(__name__)
 
 # Initialize shared objects
-ani_cache = {
-    'fetch_animes': True,
-    'ongoing': set(),
-    'completed': set()
-}
-
-# Add the key **after** dictionary creation
-ani_cache['custom_rss'] = set()
 ffpids_cache = []
 ffLock = Semaphore(3)
 ffQueue = Queue()
 ff_queued = dict()
 
+# The encode commands call bare `ffmpeg`. If the system binary is absent, fall
+# back to the static-ffmpeg wheel (a project dependency) and put it on PATH.
+try:
+    from shutil import which as _which
+    if _which("ffmpeg") is None:
+        import static_ffmpeg
+        static_ffmpeg.add_paths()
+except Exception as _ff_err:  # noqa: BLE001
+    LOGS.warning(f"static-ffmpeg not available: {_ff_err}")
+
 try:
     bot = Client(
-        name="AutoAniAdvance",
+        name="FinderBot",
         api_id=Var.API_ID,
         api_hash=Var.API_HASH,
         bot_token=Var.BOT_TOKEN,

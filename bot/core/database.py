@@ -30,6 +30,10 @@ class Database:
         # Anime collection (named using BOT_TOKEN)
         self.__animes = self.__db[f"animes_{Var.BOT_TOKEN.split(':')[0]}"]
 
+    async def command(self, *args, **kwargs):
+        """Raw database command passthrough (e.g. db.command('ping'))."""
+        return await self.__db.command(*args, **kwargs)
+
     # USER DATA
     async def present_user(self, user_id: int):
         found = await self.user_data.find_one({'_id': user_id})
