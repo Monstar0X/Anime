@@ -1,0 +1,28 @@
+{
+  "sites": [
+    {
+      "id": "myrsssite",
+      "label": "My RSS Site",
+      "type": "rss",
+      "enabled": false,
+      "url": "https://example.com/rss?q={query}",
+      "category_hint": "movies"
+    },
+    {
+      "id": "myjsonsite",
+      "label": "My JSON API",
+      "type": "json",
+      "enabled": false,
+      "url": "https://example.com/api/search",
+      "query_param": "q",
+      "params": {"limit": "50"},
+      "items_path": "data.results",
+      "title_key": "name",
+      "magnet_key": "magnet",
+      "hash_key": "info_hash",
+      "size_key": "size",
+      "seeders_key": "seeders",
+      "category_hint": "series"
+    }
+  ]
+}

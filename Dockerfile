@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     ffmpeg git wget pv jq python3-dev \
     mediainfo gcc libsm6 libxext6 \
     libfontconfig1 libxrender1 libgl1-mesa-glx \
+    p7zip-full unrar-free \
  && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies

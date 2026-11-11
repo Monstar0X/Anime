@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+log.txt
+prog.txt
+downloads/
+torrents/
+encode/
+thumbs/
+*.session
+*.session-journal
