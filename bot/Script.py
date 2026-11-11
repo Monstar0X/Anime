@@ -1,23 +1,23 @@
 import os
 
 class botmaker(object):
-    START_MSG = """<b>Bᴀᴋᴀᴀᴀ!!!....{first}\n\n<blockquote>ɪ ᴀᴍ ғɪʟᴇ sᴛᴏʀᴇ + Aᴜᴛᴏ Aɴɪᴍᴇ ʙᴏᴛ, ɪ ᴄᴀɴ sᴛᴏʀᴇ ᴘʀɪᴠᴀᴛᴇ ғɪʟᴇs ɪɴ sᴘᴇᴄɪғɪᴇᴅ ᴄʜᴀɴɴᴇʟ ᴀɴᴅ ᴏᴛʜᴇʀ ᴜsᴇʀs ᴄᴀɴ ᴀᴄᴄᴇss ɪᴛ ғʀᴏᴍ sᴘᴇᴄɪᴀʟ ʟɪɴᴋ.</blockquote></b>"""
+    START_MSG = """<b>ʜᴇʏ {first} 👋\n\n<blockquote>ɪ ᴀᴍ ᴀ sᴇᴀʀᴄʜ + ʟᴇᴇᴄʜ ʙᴏᴛ. ᴛᴀᴘ <b>🔍 ғɪɴᴅ ʜᴇʀᴇ</b>, ᴛʏᴘᴇ ᴀ ɴᴀᴍᴇ (ᴀɴɪᴍᴇ / sᴇʀɪᴇs / ᴍᴏᴠɪᴇ) ᴀɴᴅ ɪ ᴡɪʟʟ ᴘᴏsᴛ ᴛʜᴇ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋs ɪɴ ᴛʜᴇ ᴄʜᴀɴɴᴇʟ.</blockquote></b>"""
 
     FORCE_MSG = """ʜᴇʟʟᴏ {first}\n\n<b>ᴊᴏɪɴ ᴏᴜʀ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʜᴇɴ ᴄʟɪᴄᴋ ᴏɴ ʀᴇʟᴏᴀᴅ button ᴛᴏ ɢᴇᴛ ʏᴏᴜʀ ʀᴇǫᴜᴇꜱᴛᴇᴅ ꜰɪʟᴇ.</b>"""
 
-    HELP_TXT = """<b><blockquote>ᴛʜɪs ɪs ᴀɴ ғɪʟᴇ ᴛᴏ ʟɪɴᴋ ʙᴏᴛ ᴡᴏʀᴋɪɴɢ ғᴏʀ @Jas_Mehra
+    HELP_TXT = """<b><blockquote>sᴇᴀʀᴄʜ + ʟᴇᴇᴄʜ ʙᴏᴛ
 
-❏ ʙᴏᴛ ᴄᴏᴍᴍᴀɴᴅs
-├ /start : sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ
-├ /about : ᴏᴜʀ Iɴғᴏʀᴍᴀᴛɪᴏɴ
-└ /help : ʜᴇʟᴘ ʀᴇʟᴀᴛᴇᴅ ʙᴏᴛ
+❏ ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs
+├ /start : ᴏᴘᴇɴ ᴛʜᴇ sᴇᴀʀᴄʜ ᴍᴇɴᴜ
+├ /settings : ᴛᴏɢɢʟᴇ ᴍᴇᴛᴀᴅᴀᴛᴀ / ᴛʜᴜᴍʙɴᴀɪʟ / ᴇɴᴄᴏᴅɪɴɢ ᴇᴛᴄ.
+├ /about : ᴀʙᴏᴜᴛ ᴛʜᴇ ʙᴏᴛ
+└ /help : ᴛʜɪs ᴍᴇssᴀɢᴇ
 
-sɪᴍᴘʟʏ ᴄʟɪᴄᴋ ᴏɴ ʟɪɴᴋ ᴀɴᴅ sᴛᴀʀᴛ ᴛʜᴇ ʙᴏᴛ, ᴊᴏɪɴ ʙᴏᴛʜ ᴄʜᴀɴɴᴇʟs ᴀɴᴅ ᴛʀʏ ᴀɢᴀɪɴ — ᴛʜᴀᴛ'ꜱ ɪᴛ.....!</blockquote></b>"""
+ᴛᴀᴘ <b>🔍 ғɪɴᴅ ʜᴇʀᴇ</b>, ᴛʏᴘᴇ ᴀ ɴᴀᴍᴇ, ᴘɪᴄᴋ ᴀ ʀᴇsᴜʟᴛ ʙʏ ɴᴜᴍʙᴇʀ ᴀɴᴅ ᴛʜᴇ ʙᴏᴛ ᴡɪʟʟ ᴘᴏsᴛ ᴛʜᴇ ᴅᴏᴡɴʟᴏᴀᴅ ʟɪɴᴋs.</blockquote></b>"""
 
     ABOUT_TXT = """<b><blockquote>
-◈ ᴄʀᴇᴀᴛᴏʀ: <a href="https://t.me/Jas_Mehra">𝖩𝖺𝗌 𝖬𝖾𝗁𝗋𝖺</a>
-◈ ᴀɴɪᴍᴇ ᴄʜᴀɴɴᴇʟ: <a href="https://t.me/Anime_x_Nova">𝖠𝗇𝗂𝗆𝖾 𝖭𝗈𝗏𝖺</a>
-◈ Oɴɢᴏɪɴɢ Eɴɢ sᴜʙ/ᴅᴜʙ: <a href="https://t.me/Ongoing_Nova">Ongoing Nova</a>
+◈ sᴇᴀʀᴄʜ + ʟᴇᴇᴄʜ ʙᴏᴛ
+◈ ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴍᴜʟᴛɪ-ꜱɪᴛᴇ ᴛᴏʀʀᴇɴᴛ sᴇᴀʀᴄʜ
 </blockquote></b>"""
 
     CMD_TXT = """<blockquote><b>» ᴀᴅᴍɪɴ ᴄᴏᴍᴍᴀɴᴅs:</b></blockquote>

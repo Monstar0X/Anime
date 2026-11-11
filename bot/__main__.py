@@ -11,12 +11,10 @@ import logging
 import static_ffmpeg
 static_ffmpeg.add_paths()
 
-from bot.core.bot_instance import bot, bot_loop, sch, ffQueue, ffLock, ffpids_cache, ff_queued
+from bot.core.bot_instance import bot, bot_loop, sch, ffQueue, ffpids_cache, ff_queued
 from bot.core.reporter import rep
 from config import Var, LOGS
-from bot.core.auto_animes import fetch_animes
-from bot.core.func_utils import clean_up, new_task, editMessage
-from bot.plugins.up_posts import upcoming_animes
+from bot.core.func_utils import clean_up, new_task
 
 # Set bot.rep for use in the application
 bot.rep = rep
@@ -61,7 +59,6 @@ async def queue_loop():
         await asleep(10)
 
 async def main():
-    sch.add_job(upcoming_animes, "cron", hour=0, minute=30)
     await bot.start()
 
  # Set bot username
@@ -76,7 +73,7 @@ async def main():
    
 
     await restart_bot()
-    LOGS.info('Auto Anime Bot Started!')
+    LOGS.info('Finder Bot Started!')
 
     try:
         db_channel = await bot.get_chat(Var.CHANNEL_ID)
@@ -96,9 +93,9 @@ async def main():
 
     sch.start()
     bot_loop.create_task(queue_loop())
-    await fetch_animes()
+    LOGS.info("Finder bot started (RSS auto-fetch removed).")
     await idle()
-    LOGS.info('Auto Anime Bot Stopped!')
+    LOGS.info('Finder Bot Stopped!')
     await bot.stop()
     for task in all_tasks():
         task.cancel()
