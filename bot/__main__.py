@@ -81,7 +81,7 @@ async def main():
         await test_msg.delete()
         bot.db_channel = db_channel
     except Exception as e:
-        await bot.rep.report(f"❌ MAIN_CHANNEL error: {e}", "critical")
+        await bot.rep.report(f"❌ CHANNEL_ID error: {e}", "critical")
         await bot.stop()
         return
 
