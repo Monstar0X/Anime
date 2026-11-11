@@ -10,6 +10,9 @@ from helper_func import encode, admin
 
 @bot.on_message(filters.private & admin & ~filters.command(['start', 'commands','users','broadcast','batch', 'custom_batch', 'genlink','stats', 'dlt_time', 'check_dlt_time', 'dbroadcast', 'ban', 'unban', 'banlist', 'addchnl', 'delchnl', 'listchnl', 'fsub_mode', 'pbroadcast', 'add_admin', 'deladmin', 'admins', 'log', 'pause', 'resume', 'addlink', 'addtask', 'add_rss', 'list_rss', 'remove_rss', 'ping', 'shell', 'ongoing', 'restart','post','search']))
 async def channel_post(client: Client, message: Message):
+    # A bare text message is a search query, not a file to store.
+    if message.text and not message.text.startswith("/"):
+        return
     reply_text = await message.reply_text("Please Wait...!", quote = True)
     try:
         post_message = await message.copy(chat_id = client.db_channel.id, disable_notification=True)

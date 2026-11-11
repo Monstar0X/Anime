@@ -10,7 +10,7 @@ from pyrogram.enums import ParseMode, ChatAction
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, ChatInviteLink, ChatPrivileges
 from pyrogram.errors.exceptions.bad_request_400 import UserNotParticipant
 from pyrogram.errors import FloodWait, UserIsBlocked, InputUserDeactivated, UserNotParticipant
-from bot.core.bot_instance import bot, bot_loop, ani_cache
+from bot.core.bot_instance import bot, bot_loop
 from bot.Script import botmaker
 from helper_func import *
 from bot.core.database import db
@@ -22,8 +22,7 @@ from pyrogram import filters
 from pyrogram.types import Message
 import subprocess
 from config import Var
-from bot.core.func_utils import decode, editMessage, sendMessage, new_task, convertTime, getfeed
-from bot.core.auto_animes import get_animes
+from bot.core.func_utils import decode, editMessage, sendMessage, new_task, convertTime
 from bot.core.reporter import rep
 import time
 from datetime import datetime
@@ -121,6 +120,11 @@ async def not_joined(client: Client, message: Message):
 async def start_msg(client: Client, message: Message):
     user_id = message.from_user.id
     from_user = message.from_user
+
+    # Plain /start is rendered by bot/plugins/finder.py; this handler only
+    # serves deep links (download buttons).
+    if len(message.text.split()) <= 1:
+        return
 
     # Check if user is banned
     banned_users = await db.get_ban_users()
@@ -308,40 +312,3 @@ async def start_msg(client: Client, message: Message):
             await editMessage(temp, "<b>File Not Found !</b>")
     else:
         await editMessage(temp, "<b>Input Link is Invalid for Usage !</b>")
-
-@bot.on_message(filters.command('pause') & filters.private & admin)  # Ensure admin filter is defined
-async def pause_fetch(client, message):
-    ani_cache['fetch_animes'] = False
-    await sendMessage(message, "Successfully Paused Fetching Anime...")
-
-@bot.on_message(filters.command('resume') & filters.private & admin)  # Ensure admin filter is defined
-async def resume_fetch(client, message):
-    ani_cache['fetch_animes'] = True
-    await sendMessage(message, "Successfully Resumed Fetching Anime...")
-
-@bot.on_message(filters.command('addlink') & filters.private & admin)  # Ensure admin filter is defined
-@new_task
-async def add_link(client, message):
-    if len(args := message.text.split()) <= 1:
-        return await sendMessage(message, "<b>No Link Found to Add</b>")
-    
-    Var.RSS_ITEMS.append(args[1])
-    await sendMessage(message, f"<code>Global Link Added Successfully!</code>\n\n<b> • All Link(s) :</b> {', '.join(Var.RSS_ITEMS)[:-2]}")
-
-@bot.on_message(filters.command('addtask') & filters.private & admin)  # Ensure admin filter is defined
-@new_task
-async def add_task(client, message):
-    if len(args := message.text.split()) <= 1:
-        return await sendMessage(message, "<b>No Task Found to Add</b>")
-    
-    index = int(args[2]) if len(args) > 2 and args[2].isdigit() else 0
-    if not (taskInfo := await getfeed(args[1], index)):
-        return await sendMessage(message, "<b>No Task Found to Add for the Provided Link</b>")
-    
-    ani_task = bot_loop.create_task(get_animes(taskInfo.title, taskInfo.link, True))
-    await sendMessage(message, f"<i><b>Task Added Successfully!</b></i>\n\n    • <b>Task Name :</b> {taskInfo.title}\n    • <b>Task Link :</b> {args[1]}")
-
-@bot.on_message(filters.command('commands') & filters.private & admin)  # Ensure admin filter is defined
-async def bcmd(client: Client, message: Message):        
-    reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("• ᴄʟᴏsᴇ •", callback_data="close")]])
-    await message.reply(text=botmaker.CMD_TXT, reply_markup=reply_markup, quote=True)

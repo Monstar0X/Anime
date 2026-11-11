@@ -1,12 +1,12 @@
 
-from pyrogram import Client 
+from pyrogram import Client, filters
 from bot.core.bot_instance import bot
 from config import Var
 from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from bot.core.database import *
 from bot.Script import botmaker
 
-@bot.on_callback_query()
+@bot.on_callback_query(~filters.regex(r"^(fd_|st_)"))
 async def cb_handler(client: bot, query: CallbackQuery):
     data = query.data
 
@@ -15,7 +15,7 @@ async def cb_handler(client: bot, query: CallbackQuery):
             text=botmaker.HELP_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
+                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='fd_home'),
                  InlineKeyboardButton("ᴄʟᴏꜱᴇ", callback_data='close')]
             ])
         )
@@ -25,7 +25,7 @@ async def cb_handler(client: bot, query: CallbackQuery):
             text=botmaker.ABOUT_TXT.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='start'),
+                [InlineKeyboardButton('ʜᴏᴍᴇ', callback_data='fd_home'),
                  InlineKeyboardButton('ᴄʟᴏꜱᴇ', callback_data='close')]
             ])
         )
@@ -35,6 +35,7 @@ async def cb_handler(client: bot, query: CallbackQuery):
             text=botmaker.START_MSG.format(first=query.from_user.first_name),
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔍 ꜰɪɴᴅ ʜᴇʀᴇ", callback_data='fd_start')],
                 [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'),
                  InlineKeyboardButton("ᴀʙᴏᴜᴛ", callback_data='about')]
             ])
