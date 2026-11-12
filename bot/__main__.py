@@ -8,8 +8,10 @@ from os import path as ospath, execl, kill
 from sys import executable
 from signal import SIGKILL
 import logging
-import static_ffmpeg
-static_ffmpeg.add_paths()
+from shutil import which
+if which("ffmpeg") is None:
+    import static_ffmpeg
+    static_ffmpeg.add_paths()
 
 from bot.core.bot_instance import bot, bot_loop, sch, ffQueue, ffpids_cache, ff_queued
 from bot.core.reporter import rep
