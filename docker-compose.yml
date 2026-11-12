@@ -1,0 +1,32 @@
+# Finder / Leecher bot — single worker container.
+#
+#   1. cp .env.example .env   and fill in your values
+#   2. docker compose up -d --build
+#   3. docker compose logs -f
+#
+# DB_URI should point at a free MongoDB Atlas M0 cluster (see DEPLOY.md).
+services:
+  bot:
+    build: .
+    image: anime-finder-bot:latest
+    container_name: anime-finder-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      # Keeps the self-update helper inert unless you opt in.
+      AUTO_UPDATE: "false"
+    volumes:
+      - ./downloads:/app/downloads
+      - ./torrents:/app/torrents
+      - ./encode:/app/encode
+      - ./thumbs:/app/thumbs
+    # Encoding/torrenting is memory-hungry; give it room but cap runaway use.
+    mem_limit: 2g
+    # Healthcheck: the process is alive if the module imports cleanly.
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import bot.core.bot_instance"]
+      interval: 60s
+      timeout: 20s
+      retries: 3
+      start_period: 40s

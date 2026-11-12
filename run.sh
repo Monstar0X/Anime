@@ -1,16 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# Start the Finder / Leecher bot. Safe to run inside a container:
+# no sudo, no pip installs, no self-update.
+set -euo pipefail
 
-# Check if ffmpeg is already installed
-if ! command -v ffmpeg &> /dev/null; then
-    echo "ffmpeg is not installed. Installing ffmpeg..."
-    sudo apt update && sudo apt install -y ffmpeg
-else
-    echo "ffmpeg is already installed. Skipping installation."
+# ffmpeg: prefer a system install, otherwise let static-ffmpeg provide it.
+if ! command -v ffmpeg >/dev/null 2>&1; then
+    echo "ffmpeg not found; static-ffmpeg will provide it at runtime."
 fi
 
-# Install Python dependencies from requirements.txt
-pip3 install --no-cache-dir -r requirements.txt
-pip install lxml_html_clean
-
-# Run the Python bot
-python3 update.py && python3 -m bot
+exec python3 -m bot

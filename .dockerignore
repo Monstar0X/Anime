@@ -1,0 +1,29 @@
+# Never bake secrets or local state into the image
+.env
+config.env
+*.session
+*.session-journal
+
+# Python / build cruft
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Runtime scratch (recreated in the image)
+downloads/
+torrents/
+encode/
+thumbs/
+log.txt
+prog.txt
+
+# VCS / editors / docs
+.git/
+.gitignore
+.github/
+*.md
+!README.md
+.vscode/
+.idea/

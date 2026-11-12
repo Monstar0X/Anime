@@ -203,6 +203,23 @@ python3 -m bot
 
 ---
 
+## 🚀 Deploy
+
+This is a **worker** bot (no web port). For free 24/7 hosting see
+[DEPLOY.md](DEPLOY.md) — recommended: **Oracle Cloud Always Free** ARM VM with
+the included `Dockerfile` / `docker-compose.yml`, plus a free **MongoDB Atlas
+M0** cluster for `DB_URI`.
+
+Quick start with Docker:
+
+```bash
+cp .env.example .env     # fill it in
+docker compose up -d --build
+docker compose logs -f
+```
+
+---
+
 ## 🧱 Project layout
 
 ```text

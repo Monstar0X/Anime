@@ -1,6 +1,15 @@
+# Render blueprint. NOTE: Render's free tier covers WEB services only.
+# This bot is a worker, so a worker service requires a paid plan.
+# For a free 24/7 host see DEPLOY.md (Oracle Always Free / GCP e2-micro).
 services:
   - type: worker
-    name: cantarellabots-telegram-bot
+    name: anime-finder-bot
     runtime: python
-    buildCommand: ""
-    startCommand: "python main.py"
+    plan: starter
+    buildCommand: "pip install -r requirements.txt && pip install 'lxml[html_clean]'"
+    startCommand: "python3 -m bot"
+    envVars:
+      - key: AUTO_UPDATE
+        value: "false"
+      - key: PYTHON_VERSION
+        value: "3.11.9"
