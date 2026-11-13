@@ -58,23 +58,27 @@ def quality_label(quality: str) -> str:
     return quality or ""
 
 
-def detect_audio(title: str) -> set[str]:
+def detect_audio(title: str, provider: str = "") -> set[str]:
     low = title.lower()
     tags: set[str] = set()
     for tag, needles in _AUDIO_TAGS.items():
         if any(n in low for n in needles):
             tags.add(tag)
+    # SubsPlease releases are Japanese-audio releases with English subtitles
+    # unless the title explicitly advertises a different dub/audio track.
+    if provider == "subsplease" and not tags:
+        tags.add("japanese")
     # "dub" also implies English audio; keep both for caption richness.
     if "dub" in tags:
         tags.add("english")
     return tags or {"unknown"}
 
 
-def detect_subtitles(title: str) -> list[str]:
+def detect_subtitles(title: str, provider: str = "") -> list[str]:
     low = title.lower()
     if "multi sub" in low or "multi-sub" in low or "multisub" in low:
         return ["Multi"]
-    if "sub" in low:
+    if "sub" in low or provider == "subsplease":
         return ["English"]
     return []
 
@@ -82,6 +86,7 @@ def detect_subtitles(title: str) -> list[str]:
 def detect_languages(title: str) -> list[str]:
     tags = detect_audio(title)
     pretty = {
+        "japanese": "Japanese",
         "dual": "Dual Audio",
         "multi": "Multi Audio",
         "hindi": "Hindi",
@@ -90,7 +95,7 @@ def detect_languages(title: str) -> list[str]:
         "english": "English",
         "sub": "Japanese",
     }
-    return [pretty[t] for t in ("hindi", "tamil", "telugu", "english", "dual", "multi", "sub")
+    return [pretty[t] for t in ("hindi", "tamil", "telugu", "english", "japanese", "dual", "multi", "sub")
             if t in tags]
 
 
@@ -212,7 +217,7 @@ def matches_filters(result: TorrentResult, categories: set[str], audio: set[str]
         # Title-based audio match. When a specific track is requested we only
         # keep releases that actually advertise it (dual/multi count as their
         # own selectable options, not as every language).
-        tags = detect_audio(result.title) - {"unknown"}
+        tags = detect_audio(result.title, result.provider) - {"unknown"}
         if not (tags & audio):
             return False
     return True
@@ -224,6 +229,8 @@ class SearchOutcome:
     results: list[TorrentResult] = field(default_factory=list)
     providers_used: list[str] = field(default_factory=list)
     providers_failed: list[str] = field(default_factory=list)
+    provider_counts: dict[str, int] = field(default_factory=dict)
+    provider_errors: dict[str, str] = field(default_factory=dict)
 
 
 async def search_all(query: str, category: str = "all", sites: list[str] | None = None,
@@ -231,22 +238,29 @@ async def search_all(query: str, category: str = "all", sites: list[str] | None 
     providers = get_sites(sites)
     outcome = SearchOutcome()
 
-    async def run(site):
-        try:
-            return site, await asyncio.wait_for(site.search(query, category),
-                                                timeout=per_site_timeout)
-        except asyncio.TimeoutError:
-            LOGS.warning(f"[search] {site.id} timed out")
-            return site, None
-        except Exception as exc:  # noqa: BLE001
-            LOGS.warning(f"[search] {site.id} error: {exc}")
-            return site, None
+    semaphore = asyncio.Semaphore(4)
 
-    for site, items in await asyncio.gather(*(run(s) for s in providers)):
+    async def run(site):
+        async with semaphore:
+            try:
+                items = await asyncio.wait_for(
+                    site.search(query, category), timeout=per_site_timeout
+                )
+                return site, items, ""
+            except asyncio.TimeoutError:
+                reason = "timeout"
+            except Exception as exc:  # noqa: BLE001 - isolate provider failures
+                reason = str(exc) or exc.__class__.__name__
+            LOGS.warning(f"[search] {site.id} failed: {reason}")
+            return site, None, reason
+
+    for site, items, error in await asyncio.gather(*(run(s) for s in providers)):
         if items is None:
             outcome.providers_failed.append(site.id)
+            outcome.provider_errors[site.id] = error
             continue
         outcome.providers_used.append(site.id)
+        outcome.provider_counts[site.id] = len(items)
         outcome.results.extend(items)
 
     seen: set[str] = set()

@@ -14,7 +14,7 @@ from os import path as ospath
 from typing import Iterable
 from urllib.parse import quote_plus, urlencode
 
-from aiohttp import ClientSession
+from aiohttp import ClientError, ClientSession
 
 from config import Var, LOGS
 
@@ -64,17 +64,33 @@ class TorrentResult:
         return re.sub(r"\s+", " ", self.title).strip()
 
 
-def parse_size(text: str) -> int:
-    if not text:
+def parse_size(text) -> int:
+    """Parse a provider size as bytes.
+
+    Providers disagree on representation: some send `1.4 GiB`, others send
+    a raw byte count as an integer or numeric string.
+    """
+    if text is None or text == "":
         return 0
-    m = re.search(r"([\d.]+)\s*([KMGT]?i?B)", text, re.IGNORECASE)
+    if isinstance(text, (int, float)):
+        return max(0, int(text))
+    value_text = str(text).strip().replace(",", "")
+    if not value_text:
+        return 0
+    # Bare numeric values in these provider APIs are byte counts.
+    if re.fullmatch(r"\d+(?:\.\d+)?", value_text):
+        try:
+            return max(0, int(float(value_text)))
+        except ValueError:
+            return 0
+    m = re.search(r"([\d.]+)\s*([KMGT]?i?B)\b", value_text, re.IGNORECASE)
     if not m:
         return 0
     try:
-        value = float(m.group(1))
+        amount = float(m.group(1))
     except ValueError:
         return 0
-    return int(value * _SIZE_UNITS.get(m.group(2).lower(), 1))
+    return max(0, int(amount * _SIZE_UNITS.get(m.group(2).lower(), 1)))
 
 
 def parse_int(text) -> int:
@@ -105,8 +121,12 @@ def _extract_magnet(*texts: str) -> str:
     return ""
 
 
+class ProviderRequestError(RuntimeError):
+    """A provider could not be reached or rejected the request."""
+
+
 async def _get(url: str, *, params: dict | None = None, timeout: int = 15,
-               headers: dict | None = None) -> str | None:
+               headers: dict | None = None) -> str:
     hdrs = {"User-Agent": UA, "Accept": "*/*"}
     if headers:
         hdrs.update(headers)
@@ -114,12 +134,15 @@ async def _get(url: str, *, params: dict | None = None, timeout: int = 15,
         async with ClientSession(headers=hdrs) as session:
             async with session.get(url, params=params, timeout=timeout) as resp:
                 if resp.status != 200:
-                    LOGS.warning(f"[torrent_sites] {url} -> HTTP {resp.status}")
-                    return None
+                    detail = f"HTTP {resp.status}"
+                    LOGS.warning(f"[torrent_sites] {url} -> {detail}")
+                    raise ProviderRequestError(detail)
                 return await resp.text()
-    except Exception as exc:  # noqa: BLE001 - network best effort
+    except ProviderRequestError:
+        raise
+    except (ClientError, TimeoutError, OSError) as exc:
         LOGS.warning(f"[torrent_sites] {url} failed: {exc}")
-        return None
+        raise ProviderRequestError(str(exc)) from exc
 
 
 class TorrentSite:
@@ -250,6 +273,41 @@ class ApibaySite(TorrentSite):
         return out
 
 
+async def _tmdb_tv_imdb_id(query: str) -> str:
+    """Resolve a TV title to its IMDb id for EZTV's supported lookup API."""
+    if not Var.TMDB_API_KEY:
+        return ""
+    try:
+        async with ClientSession(headers={"User-Agent": UA, "Accept": "application/json"}) as session:
+            async with session.get(
+                "https://api.themoviedb.org/3/search/tv",
+                params={"api_key": Var.TMDB_API_KEY, "query": query},
+                timeout=15,
+            ) as resp:
+                if resp.status != 200:
+                    raise ProviderRequestError(f"TMDB TV search HTTP {resp.status}")
+                payload = await resp.json()
+            hits = (payload or {}).get("results") or []
+            if not hits:
+                return ""
+            # TMDB search is relevance-ranked; use its first result.
+            tv_id = hits[0].get("id")
+            if not tv_id:
+                return ""
+            async with session.get(
+                f"https://api.themoviedb.org/3/tv/{tv_id}/external_ids",
+                params={"api_key": Var.TMDB_API_KEY},
+                timeout=15,
+            ) as resp:
+                if resp.status != 200:
+                    raise ProviderRequestError(f"TMDB external IDs HTTP {resp.status}")
+                ids = await resp.json()
+            return str((ids or {}).get("imdb_id") or "")
+    except Exception as exc:  # noqa: BLE001
+        LOGS.warning(f"[torrent_sites] TMDB IMDb lookup failed for {query!r}: {exc}")
+        return ""
+
+
 class EztvSite(TorrentSite):
     id = "eztv"
     label = "EZTV"
@@ -260,22 +318,26 @@ class EztvSite(TorrentSite):
     async def search(self, query, category="all"):
         if category not in ("all", "series"):
             return []
+
+        # EZTV's API does not offer a title query parameter. Its supported
+        # show-specific lookup is IMDb-ID based; searching only page 1 of the
+        # newest 100 releases misses older catalogue titles such as Breaking Bad.
+        imdb_id = await _tmdb_tv_imdb_id(query)
+        if not imdb_id:
+            raise ProviderRequestError(
+                "EZTV needs TMDB_API_KEY to resolve a show's IMDb ID; "
+                "the latest-100 fallback is not a reliable catalogue search"
+            )
+
         text = await _get(
-            "https://eztv.re/api/get-torrents",
-            params={"limit": "100", "page": "1"},
+            "https://eztvx.to/api/get-torrents",
+            params={"imdb_id": imdb_id, "limit": "100", "page": "1"},
+            headers={"Accept": "application/json", "Referer": "https://eztvx.to/"},
         )
-        if not text:
-            return []
-        try:
-            data = json.loads(text)
-        except ValueError:
-            return []
-        tokens = [t for t in re.split(r"\W+", query.lower()) if len(t) > 1]
+        data = json.loads(text)
         out: list[TorrentResult] = []
         for item in data.get("torrents", []) or []:
             title = item.get("title") or ""
-            if tokens and not all(tok in title.lower() for tok in tokens):
-                continue
             out.append(TorrentResult(
                 title=title,
                 magnet=item.get("magnet_url", ""),
@@ -299,16 +361,33 @@ class YtsSite(TorrentSite):
     async def search(self, query, category="all"):
         if category not in ("all", "movies"):
             return []
-        text = await _get(
+        # yts.mx DNS/availability is inconsistent on some hosted networks.
+        # Try the primary endpoint first, then the currently documented API
+        # mirror as a fallback. An empty result from the first host also gets
+        # a fallback attempt rather than being treated as a definitive miss.
+        payload = None
+        errors = []
+        endpoints = (
             "https://yts.mx/api/v2/list_movies.json",
-            params={"query_term": query, "limit": "50"},
+            "https://movies-api.accel.li/api/v2/list_movies.json",
         )
-        if not text:
-            return []
-        try:
-            payload = json.loads(text)
-        except ValueError:
-            return []
+        for endpoint in endpoints:
+            try:
+                text = await _get(
+                    endpoint,
+                    params={"query_term": query, "limit": "50"},
+                    headers={"Accept": "application/json", "Referer": "https://yts.mx/"},
+                )
+                candidate = json.loads(text)
+                candidate_data = candidate.get("data") or {}
+                if candidate_data.get("movies"):
+                    payload = candidate
+                    break
+                payload = candidate
+            except Exception as exc:  # noqa: BLE001 - try next API host
+                errors.append(str(exc))
+        if payload is None:
+            raise ProviderRequestError("; ".join(errors) or "YTS API unavailable")
         data = payload.get("data") or {}
         out: list[TorrentResult] = []
         for movie in data.get("movies", []) or []:
@@ -366,7 +445,12 @@ def _generic_rss(text: str, provider: str) -> list[TorrentResult]:
         title = entry.get("title", "").strip()
         link = entry.get("link", "")
         summary = entry.get("summary", "") or entry.get("description", "")
-        magnet = _extract_magnet(link, summary, entry.get("id", ""))
+        content = " ".join(
+            str(part.get("value", "")) for part in (entry.get("content") or [])
+            if isinstance(part, dict)
+        )
+        size_source = " ".join((str(summary), content))
+        magnet = _extract_magnet(link, summary, content, entry.get("id", ""))
         enclosure = ""
         if entry.get("enclosures"):
             enclosure = entry["enclosures"][0].get("href", "")
@@ -378,7 +462,7 @@ def _generic_rss(text: str, provider: str) -> list[TorrentResult]:
             title=title,
             magnet=magnet or link,
             provider=provider,
-            size_bytes=parse_size(summary),
+            size_bytes=parse_size(size_source),
             pub_date=entry.get("published", ""),
             page_url=link,
         ))
