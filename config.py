@@ -80,7 +80,7 @@ class Var:
     # Built-in ids: nyaa, subsplease, apibay, eztv, yts, torrentgalaxy, animetosho
     TORRENT_SITES = [s.strip() for s in getenv(
         "TORRENT_SITES",
-        "nyaa,subsplease,apibay,eztv,yts"
+        "nyaa,subsplease,apibay,eztv,yts,torrentgalaxy"
     ).split(",") if s.strip()]
 
     # Extra user-defined providers (see custom_sites.json).
